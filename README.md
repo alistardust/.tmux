@@ -440,3 +440,67 @@ for WSL][wsltty].
 [WSL]: https://learn.microsoft.com/en-us/windows/wsl
 [wsltty]: https://github.com/mintty/wsltty
 [Windows Terminal]: https://aka.ms/terminal
+
+Accessibility
+-------------
+
+Oh my tmux! includes an opt-in accessibility mode for screen reader users, low
+vision users, and colorblind users. Enable it by setting one variable in your
+`.tmux.conf.local`:
+
+```
+tmux_conf_accessibility=enabled
+```
+
+### What changes when enabled
+
+- **Cursor always visible** - screen readers track the hardware cursor; tmux no
+  longer hides it in menus and choose-tree
+- **High-contrast palette** - WCAG AA compliant colors, distinguishable under
+  all forms of color blindness
+- **ASCII separators** - `|` instead of Powerline glyphs (screen readers announce
+  "bar" instead of "black right-pointing triangle")
+- **Reduced status noise** - 60-second refresh, no seconds, no hostname in status
+- **Text notifications** - visual-activity/bell/silence produce message-line text
+  that screen readers detect
+
+### Keybindings (optional)
+
+Enable accessible keybindings with `tmux_conf_accessibility_keys=enabled`:
+
+| Key | Action |
+|-----|--------|
+| `<prefix> Left/Down/Up/Right` | Move between panes |
+| `<prefix> M-Left/Down/Up/Right` | Resize pane |
+| `<prefix> C-Left/C-Right` | Previous/next window |
+| `<prefix> a` | Announce pane context |
+| `<prefix> A` | List accessibility keys |
+| `<prefix> s` | Sessions (accessible format) |
+| `<prefix> w` | Windows (accessible format) |
+
+### Requirements
+
+- tmux >= 3.3 for full screen reader support (cursor tracking in choose-tree)
+- tmux 2.6-3.2: theme and keybindings work, but screen reader cursor tracking
+  in menus will not function; a warning is displayed
+
+### Screen reader recommendations
+
+| Platform | Recommended setup |
+|----------|-------------------|
+| Windows + WSL | Windows Terminal + NVDA (or JAWS) + SSH into WSL |
+| Linux | GNOME Terminal + Orca, or any terminal + TDSR |
+| macOS | Terminal.app + VoiceOver |
+
+### Configuration reference
+
+| Variable | Values | Default |
+|----------|--------|---------|
+| `tmux_conf_accessibility` | `enabled`, `disabled` | `disabled` |
+| `tmux_conf_accessibility_keys` | `enabled`, `disabled` | `disabled` |
+| `tmux_conf_accessibility_visual_activity` | `true`, `false` | `true` |
+| `tmux_conf_accessibility_display_time` | milliseconds | `5000` |
+| `tmux_conf_accessibility_theme` | `auto`, `dark`, `light` | `auto` |
+
+We welcome feedback from screen reader users. Please open an issue if you
+encounter accessibility problems.
