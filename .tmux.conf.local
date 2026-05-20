@@ -454,6 +454,95 @@ tmux_conf_uninstall_plugins_on_reload=true
 #set -g @continuum-restore 'on'
 
 
+# -- accessibility -------------------------------------------------------------
+
+# accessibility mode, possible values are:
+#   - enabled (activates high-contrast theme, ASCII separators, screen-reader
+#     friendly labels, reduced visual noise, and cursor visibility fixes)
+#   - disabled (default)
+# NOTE: screen reader support requires tmux >= 3.3
+# NOTE: unrecognized values trigger a warning and are treated as disabled
+tmux_conf_accessibility=disabled
+
+# accessible keybindings, possible values are:
+#   - enabled (adds arrow-key pane navigation, single-modifier resize,
+#     and a pane context announcement binding)
+#   - disabled (default)
+tmux_conf_accessibility_keys=disabled
+
+# visual notifications (activity, bell, silence), possible values are:
+#   - true (default when accessibility=enabled; screen readers announce these)
+#   - false (disable if notifications are too noisy with your screen reader)
+tmux_conf_accessibility_visual_activity=true
+
+# display-message duration in milliseconds for accessibility messages
+# (pane announce, warnings). Screen readers need time to read the text aloud.
+# version warning uses 2x this value.
+#   - default: 5000 (5 seconds)
+tmux_conf_accessibility_display_time=5000
+
+# accessible theme background, possible values are:
+#   - auto (default: detect from $COLORFGBG if available, else dark)
+#   - dark (dark background, light text)
+#   - light (light background, dark text)
+tmux_conf_accessibility_theme=auto
+
+# -- accessible theme (manual control) ----------------------------------------
+# High-contrast, colorblind-safe, screen-reader-friendly theme.
+# Activate all at once with tmux_conf_accessibility=enabled above, or uncomment
+# individual lines below for manual control.
+# Requires: tmux >= 3.3 for full screen reader support.
+# Tested with: NVDA + Windows Terminal, Orca + GNOME Terminal, TDSR.
+#
+# Dark palette:
+#tmux_conf_theme_colour_1="#1a1a2e"    # background (near-black)
+#tmux_conf_theme_colour_2="#2d2d44"    # inactive border
+#tmux_conf_theme_colour_3="#b0b0b0"    # inactive text (8.5:1)
+#tmux_conf_theme_colour_4="#00d4aa"    # active/focus (8.2:1)
+#tmux_conf_theme_colour_5="#ffd700"    # alert/urgent (11.3:1)
+#tmux_conf_theme_colour_6="#1a1a2e"    # dark accent
+#tmux_conf_theme_colour_7="#e0e0e0"    # primary text (12.1:1)
+#tmux_conf_theme_colour_8="#1a1a2e"    # dark accent
+#tmux_conf_theme_colour_9="#ffd700"    # warning (11.3:1)
+#tmux_conf_theme_colour_10="#ff8c00"   # error/important (5.8:1)
+#tmux_conf_theme_colour_11="#00d4aa"   # success (8.2:1)
+#tmux_conf_theme_colour_12="#6c6c6c"   # muted text (4.6:1)
+#tmux_conf_theme_colour_13="#e0e0e0"   # bright text (12.1:1)
+#tmux_conf_theme_colour_14="#1a1a2e"   # dark accent
+#tmux_conf_theme_colour_15="#1a1a2e"   # dark accent
+#tmux_conf_theme_colour_16="#ff8c00"   # danger (5.8:1)
+#tmux_conf_theme_colour_17="#e0e0e0"   # bright text (12.1:1)
+#
+# Light palette (uncomment these INSTEAD of dark palette above):
+#tmux_conf_theme_colour_1="#f5f5f0"    # background (off-white)
+#tmux_conf_theme_colour_2="#e0e0da"    # inactive border
+#tmux_conf_theme_colour_3="#555555"    # inactive text (7.5:1)
+#tmux_conf_theme_colour_4="#007a5e"    # active/focus (5.2:1)
+#tmux_conf_theme_colour_5="#b8860b"    # alert/urgent (4.6:1)
+#tmux_conf_theme_colour_6="#f5f5f0"    # light accent
+#tmux_conf_theme_colour_7="#1a1a1a"    # primary text (15.3:1)
+#tmux_conf_theme_colour_8="#f5f5f0"    # light accent
+#tmux_conf_theme_colour_9="#b8860b"    # warning (4.6:1)
+#tmux_conf_theme_colour_10="#cc3300"   # error/important (5.4:1)
+#tmux_conf_theme_colour_11="#007a5e"   # success (5.2:1)
+#tmux_conf_theme_colour_12="#777777"   # muted text (4.6:1)
+#tmux_conf_theme_colour_13="#1a1a1a"   # bright text (15.3:1)
+#tmux_conf_theme_colour_14="#f5f5f0"   # light accent
+#tmux_conf_theme_colour_15="#f5f5f0"   # light accent
+#tmux_conf_theme_colour_16="#cc3300"   # danger (5.4:1)
+#tmux_conf_theme_colour_17="#1a1a1a"   # bright text (15.3:1)
+#
+# ASCII separators (for both dark and light):
+#tmux_conf_theme_left_separator_main="|"
+#tmux_conf_theme_left_separator_sub="|"
+#tmux_conf_theme_right_separator_main="|"
+#tmux_conf_theme_right_separator_sub="|"
+#
+# Accessible status format:
+#tmux_conf_theme_window_status_format="#I:#W"
+#tmux_conf_theme_window_status_current_format="#I:#W*#{?window_zoomed_flag, [zoomed],}"
+
+
 # -- custom variables ----------------------------------------------------------
 
 # to define a custom #{foo} variable, define a POSIX shell function between the
