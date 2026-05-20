@@ -81,4 +81,43 @@ _apply_accessibility
 assert_eq "#f5f5f0" "$tmux_conf_theme_colour_1" "COLORFGBG=0;15 detects light theme"
 unset COLORFGBG
 
+# --- Test: COLORFGBG boundary (0;7 = dark, 0;8 = light) ---
+printf "\ntest_theme: COLORFGBG boundary values\n"
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17; do
+  eval "unset tmux_conf_theme_colour_$i"
+done
+COLORFGBG="0;7"
+tmux_conf_accessibility_theme=auto
+_apply_accessibility
+assert_eq "#1a1a2e" "$tmux_conf_theme_colour_1" "COLORFGBG=0;7 stays dark (boundary)"
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17; do
+  eval "unset tmux_conf_theme_colour_$i"
+done
+COLORFGBG="0;8"
+tmux_conf_accessibility_theme=auto
+_apply_accessibility
+assert_eq "#f5f5f0" "$tmux_conf_theme_colour_1" "COLORFGBG=0;8 detects light (boundary)"
+unset COLORFGBG
+
+# --- Test: COLORFGBG malformed (no semicolon) defaults to dark ---
+printf "\ntest_theme: COLORFGBG without semicolon defaults to dark\n"
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17; do
+  eval "unset tmux_conf_theme_colour_$i"
+done
+COLORFGBG="15"
+tmux_conf_accessibility_theme=auto
+_apply_accessibility
+assert_eq "#1a1a2e" "$tmux_conf_theme_colour_1" "COLORFGBG=15 (no semicolon) defaults to dark"
+
+# --- Test: COLORFGBG non-numeric after semicolon defaults to dark ---
+printf "\ntest_theme: COLORFGBG non-numeric defaults to dark\n"
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17; do
+  eval "unset tmux_conf_theme_colour_$i"
+done
+COLORFGBG="0;abc"
+tmux_conf_accessibility_theme=auto
+_apply_accessibility
+assert_eq "#1a1a2e" "$tmux_conf_theme_colour_1" "COLORFGBG=0;abc defaults to dark"
+unset COLORFGBG
+
 test_summary

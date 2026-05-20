@@ -80,7 +80,21 @@ unset tmux_conf_theme_colour_1
 _apply_accessibility 2>/dev/null || true
 assert_eq "#f5f5f0" "${tmux_conf_theme_colour_1}" "light theme sets colour_1 to #f5f5f0"
 
-# --- Test: visual_activity=false skips visual-* ---
+# --- Test: visual_activity=true sets all three visual-* ---
+printf "\ntest_accessibility: visual_activity=true sets bell and silence\n"
+_tmux_commands=""
+tmux_conf_accessibility="enabled"
+_tmux_version=3400
+tmux_conf_accessibility_display_time=5000
+tmux_conf_accessibility_visual_activity=true
+tmux_conf_accessibility_theme=dark
+unset tmux_conf_theme_colour_1
+_apply_accessibility 2>/dev/null || true
+assert_match "visual-activity on" "$_tmux_commands" "visual_activity=true sets visual-activity"
+assert_match "visual-bell on" "$_tmux_commands" "visual_activity=true sets visual-bell"
+assert_match "visual-silence on" "$_tmux_commands" "visual_activity=true sets visual-silence"
+
+# --- Test: visual_activity=false skips all visual-* ---
 printf "\ntest_accessibility: visual_activity=false skips visual settings\n"
 _tmux_commands=""
 tmux_conf_accessibility="enabled"
@@ -91,6 +105,20 @@ tmux_conf_accessibility_theme=dark
 unset tmux_conf_theme_colour_1
 _apply_accessibility 2>/dev/null || true
 assert_not_match "visual-activity" "$_tmux_commands" "visual_activity=false skips visual-activity"
+assert_not_match "visual-bell" "$_tmux_commands" "visual_activity=false skips visual-bell"
+assert_not_match "visual-silence" "$_tmux_commands" "visual_activity=false skips visual-silence"
+
+# --- Test: display_time=0 is clamped to minimum 1000 ---
+printf "\ntest_accessibility: display_time minimum enforcement\n"
+_tmux_commands=""
+tmux_conf_accessibility="enabled"
+_tmux_version=3400
+tmux_conf_accessibility_display_time=0
+tmux_conf_accessibility_visual_activity=true
+tmux_conf_accessibility_theme=dark
+unset tmux_conf_theme_colour_1
+_apply_accessibility 2>/dev/null || true
+assert_eq "1000" "$tmux_conf_accessibility_display_time" "display_time=0 clamped to 1000"
 
 # --- Test: invalid value triggers warning ---
 printf "\ntest_accessibility: invalid value triggers warning\n"
