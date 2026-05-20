@@ -111,7 +111,7 @@ install() {
   fi
 
   tmux() {
-    ${TMUX_PROGRAM:-tmux} ${TMUX_SOCKET:+-S "$TMUX_SOCKET"} "$@"
+    command "${TMUX_PROGRAM:-tmux}" ${TMUX_SOCKET:+-S "$TMUX_SOCKET"} "$@"
   }
   if ! is_true "$DRY_RUN" && [ -n "$TMUX" ]; then
     tmux set-environment -g TMUX_CONF "$TMUX_CONF"

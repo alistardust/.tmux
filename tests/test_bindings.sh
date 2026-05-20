@@ -6,12 +6,20 @@ set -e
 TMUX_CONF="$(dirname "$0")/../.tmux.conf"
 
 # Extract helpers
-eval "$(sed -n '/^# _is_true/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")"
-eval "$(sed -n '/^# _is_enabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")"
-eval "$(sed -n '/^# _is_disabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")"
+_extracted=$(sed -n '/^# _is_true/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted" ] && { echo "FATAL: failed to extract _is_true"; exit 1; }
+eval "$_extracted"
+_extracted=$(sed -n '/^# _is_enabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted" ] && { echo "FATAL: failed to extract _is_enabled"; exit 1; }
+eval "$_extracted"
+_extracted=$(sed -n '/^# _is_disabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted" ] && { echo "FATAL: failed to extract _is_disabled"; exit 1; }
+eval "$_extracted"
 
 # Extract accessibility bindings function
-eval "$(sed -n '/^# _apply_accessibility_bindings/,/^# }$/{ s/^# //; p; }' "$TMUX_CONF")" 2>/dev/null || true
+_extracted=$(sed -n '/^# _apply_accessibility_bindings/,/^# }$/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted" ] && { echo "FATAL: failed to extract _apply_accessibility_bindings"; exit 1; }
+eval "$_extracted"
 
 # Mock tmux
 _tmux_commands=""

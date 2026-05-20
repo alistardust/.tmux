@@ -6,12 +6,20 @@ set -e
 TMUX_CONF="$(dirname "$0")/../.tmux.conf"
 
 # Extract all needed helper functions
-eval "$(sed -n '/^# _is_true/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")"
-eval "$(sed -n '/^# _is_enabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")"
-eval "$(sed -n '/^# _is_disabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")"
+_extracted_helpers=$(sed -n '/^# _is_true/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted_helpers" ] && { echo "FATAL: failed to extract helper functions"; exit 1; }
+eval "$_extracted_helpers"
+_extracted_helpers=$(sed -n '/^# _is_enabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted_helpers" ] && { echo "FATAL: failed to extract _is_enabled"; exit 1; }
+eval "$_extracted_helpers"
+_extracted_helpers=$(sed -n '/^# _is_disabled/,/^# }/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted_helpers" ] && { echo "FATAL: failed to extract _is_disabled"; exit 1; }
+eval "$_extracted_helpers"
 
-# Extract _apply_accessibility (will fail until we implement it)
-eval "$(sed -n '/^# _apply_accessibility/,/^# }$/{ s/^# //; p; }' "$TMUX_CONF")" 2>/dev/null || true
+# Extract _apply_accessibility
+_extracted_func=$(sed -n '/^# _apply_accessibility/,/^# }$/{ s/^# //; p; }' "$TMUX_CONF")
+[ -z "$_extracted_func" ] && { echo "FATAL: failed to extract _apply_accessibility"; exit 1; }
+eval "$_extracted_func"
 
 # Mock tmux command to capture what would be set
 _tmux_commands=""

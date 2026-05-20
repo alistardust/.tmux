@@ -70,7 +70,7 @@ file names don't have a leading `.` character.
 you're on your own. Instead, every customization should happen in your
 `.tmux.conf.local` or `tmux.conf.local` customization file copy.**
 
-If you're a Vim user, setting the `VIUAL` or `EDITOR` environment variable to
+If you're a Vim user, setting the `VISUAL` or `EDITOR` environment variable to
 `vim` will enable and further customize the `vi-style` key bindings (see tmux
 manual).
 
@@ -483,6 +483,17 @@ Enable accessible keybindings with `tmux_conf_accessibility_keys=enabled`:
 - tmux >= 3.3 for full screen reader support (cursor tracking in choose-tree)
 - tmux 2.6-3.2: theme and keybindings work, but screen reader cursor tracking
   in menus will not function; a warning is displayed
+
+### Caveats
+
+- On tmux < 3.3, the `terminal-overrides '*:civis@'` setting is skipped (it
+  requires the newer terminal-features infrastructure). A one-time warning
+  message is shown with double the configured `display_time` duration.
+- `display_time` has a minimum of 1000ms to prevent messages from vanishing
+  before screen readers can announce them.
+- Theme auto-detection uses `$COLORFGBG`; if your terminal does not set this
+  variable, the theme defaults to dark. Set `tmux_conf_accessibility_theme=light`
+  explicitly if needed.
 
 ### Screen reader recommendations
 
