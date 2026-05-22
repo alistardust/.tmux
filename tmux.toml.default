@@ -1,0 +1,262 @@
+# Oh my tmux! configuration
+# https://github.com/gpakosz/.tmux
+#
+# This is the default configuration template. Copy to tmux.toml and customize.
+# Multiline values are NOT supported (single-line only).
+# Run 'prefix + W' inside tmux to launch the setup wizard.
+
+[general]
+# preserve tmux stock bindings (disables some Oh my tmux! bindings)
+#   true | false (default)
+preserve_stock_bindings = false
+
+# prompt for session name when creating a new session
+#   true | false (default) | disabled
+new_session_prompt = false
+
+# new session retains current path
+#   true | false (default) | disabled
+new_session_retain_current_path = false
+
+# new window retains current path
+#   true | false (default) | disabled
+new_window_retain_current_path = false
+
+# new window tries to reconnect ssh sessions
+#   true | false (default) | disabled
+new_window_reconnect_ssh = false
+
+# new pane retains current path
+#   true (default) | false | disabled
+new_pane_retain_current_path = true
+
+# new pane tries to reconnect ssh sessions
+#   true | false (default) | disabled
+new_pane_reconnect_ssh = false
+
+[display]
+# RGB 24-bit colour support
+#   true | false | auto (default)
+colour_24b = auto
+
+[theme]
+# enable or disable theming
+#   enabled (default) | disabled
+enabled = "enabled"
+
+# default theme (hex colours)
+colour_1 = "#080808"
+colour_2 = "#303030"
+colour_3 = "#8a8a8a"
+colour_4 = "#00afff"
+colour_5 = "#ffff00"
+colour_6 = "#080808"
+colour_7 = "#e4e4e4"
+colour_8 = "#080808"
+colour_9 = "#ffff00"
+colour_10 = "#ff00af"
+colour_11 = "#5fff00"
+colour_12 = "#8a8a8a"
+colour_13 = "#e4e4e4"
+colour_14 = "#080808"
+colour_15 = "#080808"
+colour_16 = "#d70000"
+colour_17 = "#e4e4e4"
+
+# window style
+window_fg = "default"
+window_bg = "default"
+
+# highlight focused pane
+#   true | false (default)
+highlight_focused_pane = false
+
+# focused pane background colour
+focused_pane_bg = "$tmux_conf_theme_colour_2"
+
+# pane border style
+#   thin (default) | fat
+pane_border_style = "thin"
+
+# pane border colours
+pane_border = "$tmux_conf_theme_colour_2"
+pane_active_border = "$tmux_conf_theme_colour_4"
+
+# pane indicator colours (prefix + q)
+pane_indicator = "$tmux_conf_theme_colour_4"
+pane_active_indicator = "$tmux_conf_theme_colour_4"
+
+# status line message style
+status_fg = "$tmux_conf_theme_colour_3"
+status_bg = "$tmux_conf_theme_colour_1"
+status_attr = "none"
+
+# terminal title
+terminal_title = "#h ❐ #S ● #I #W"
+
+# message style
+message_fg = "$tmux_conf_theme_colour_1"
+message_bg = "$tmux_conf_theme_colour_5"
+message_attr = "bold"
+
+# message command style (prefix : Escape)
+message_command_fg = "$tmux_conf_theme_colour_5"
+message_command_bg = "$tmux_conf_theme_colour_1"
+message_command_attr = "bold"
+
+# window modes style
+mode_fg = "$tmux_conf_theme_colour_1"
+mode_bg = "$tmux_conf_theme_colour_5"
+mode_attr = "bold"
+
+[status_bar]
+# status left/right content (separate sections with |, subsections with ,)
+left = " ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
+right = " #{prefix}#{mouse}#{pairing}#{synchronized}#{?battery_status,#{battery_status},}#{?battery_bar, #{battery_bar},}#{?battery_percentage, #{battery_percentage},} , %R , %d %b | #{username}#{root} | #{hostname} "
+
+# status left style (comma-separated for each | section)
+left_fg = "$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
+left_bg = "$tmux_conf_theme_colour_9,$tmux_conf_theme_colour_10,$tmux_conf_theme_colour_11"
+left_attr = "bold,none,none"
+
+# status right style
+right_fg = "$tmux_conf_theme_colour_12,$tmux_conf_theme_colour_13,$tmux_conf_theme_colour_14"
+right_bg = "$tmux_conf_theme_colour_15,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_17"
+right_attr = "none,none,bold"
+
+# window status format
+window_status_format = "#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+window_status_current_format = "#I #W#{?#{||:#{window_bell_flag},#{window_zoomed_flag}}, ,}#{?window_bell_flag,!,}#{?window_zoomed_flag,Z,}"
+
+# window status separator (empty string for no separator)
+window_status_separator = ""
+
+# window status style
+window_status_fg = "$tmux_conf_theme_colour_3"
+window_status_bg = "$tmux_conf_theme_colour_1"
+window_status_attr = "none"
+
+# window current status style
+window_status_current_fg = "$tmux_conf_theme_colour_1"
+window_status_current_bg = "$tmux_conf_theme_colour_4"
+window_status_current_attr = "bold"
+
+# window activity status style
+window_status_activity_fg = "default"
+window_status_activity_bg = "default"
+window_status_activity_attr = "underscore"
+
+# window bell status style
+window_status_bell_fg = "$tmux_conf_theme_colour_5"
+window_status_bell_bg = "default"
+window_status_bell_attr = "blink,bold"
+
+# window last status style
+window_status_last_fg = "$tmux_conf_theme_colour_4"
+window_status_last_bg = "$tmux_conf_theme_colour_2"
+window_status_last_attr = "none"
+
+# clock style (prefix + t)
+clock_colour = "$tmux_conf_theme_colour_4"
+clock_style = "24"
+
+[indicators]
+# pairing indicator
+pairing = "⚇"
+pairing_fg = "none"
+pairing_bg = "none"
+pairing_attr = "none"
+
+# prefix indicator
+prefix = "⌨"
+prefix_fg = "none"
+prefix_bg = "none"
+prefix_attr = "none"
+
+# mouse indicator
+mouse = "↗"
+mouse_fg = "none"
+mouse_bg = "none"
+mouse_attr = "none"
+
+# root indicator
+root = "!"
+root_fg = "none"
+root_bg = "none"
+root_attr = "bold,blink"
+
+# synchronized indicator
+synchronized = "⚏"
+synchronized_fg = "none"
+synchronized_bg = "none"
+synchronized_attr = "none"
+
+[separators]
+# status left/right sections separators
+left_main = ""
+left_sub = "|"
+right_main = ""
+right_sub = "|"
+
+[battery]
+# battery bar symbols
+bar_symbol_full = "◼"
+bar_symbol_empty = "◻"
+
+# battery bar length (auto or a number)
+bar_length = "auto"
+
+# battery bar palette (gradient | heat | "fg,empty_fg,bg")
+bar_palette = "gradient"
+
+# battery hbar palette
+hbar_palette = "gradient"
+
+# battery vbar palette
+vbar_palette = "gradient"
+
+# battery status symbols
+status_charging = "↑"
+status_discharging = "↓"
+
+[clipboard]
+# copy to OS clipboard in copy mode
+#   true | false (default) | disabled
+copy_to_os_clipboard = false
+
+[urlscan]
+# options passed to urlscan
+options = "--compact --dedupe"
+
+[accessibility]
+# accessibility mode
+#   enabled | disabled (default)
+enabled = "disabled"
+
+# accessible keybindings
+#   enabled | disabled (default)
+keys = "disabled"
+
+# visual notifications for activity/bell/silence
+#   true (default when accessibility=enabled) | false
+visual_activity = true
+
+# display-message duration (milliseconds)
+display_time = 5000
+
+# accessible theme background
+#   auto (default) | dark | light
+theme = "auto"
+
+[plugins]
+# update plugins on launch
+#   true (default) | false
+update_on_launch = true
+
+# update plugins on reload
+#   true (default) | false
+update_on_reload = true
+
+# uninstall plugins on reload when none enabled
+#   true (default) | false
+uninstall_on_reload = true

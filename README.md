@@ -170,6 +170,8 @@ Features
   - SSH/Mosh aware pane splitting (with automatic reconnection to the remote
     server)
   - Copy to OS clipboard (needs `xsel`, `xclip`, or `wl-copy` on Linux)
+  - Interactive setup wizard (`<prefix> W`) with presets and migration
+  - Accessibility features for screen reader users
   - Support for 4-digit hexadecimal Unicode characters
   - [PathPicker][] integration, if available
   - [Urlscan][] (preferred) or [Urlview][] integration, if available
@@ -280,6 +282,65 @@ variables that allow you to alter different behaviors. Upon successful
 installation, pressing `<prefix> e` will open your `.local` customization file
 copy with the editor defined by the `VISUAL` or `EDITOR` environment variable
 (defaults to `vim` when empty).
+
+### Setup Wizard
+
+The setup wizard provides a guided, interactive way to configure Oh my tmux!
+without manually editing configuration files. Launch it with:
+
+    <prefix> W
+
+Or from the command line:
+
+    sh ~/.tmux/setup-wizard.sh
+
+The wizard offers two modes:
+
+- **Quick mode**: walks through the most common settings one at a time
+- **Preset mode**: applies a complete configuration in one step (e.g.,
+  "accessible" preset for screen reader users, "minimal" preset, or
+  "powerline" preset)
+
+Configuration is stored in `tmux.toml`, a structured file that lives alongside
+your tmux configuration. The wizard generates both `tmux.toml` and a
+wizard-managed block in your `.local` file for raw tmux commands.
+
+**Migration from .tmux.conf.local**
+
+If you have an existing `.tmux.conf.local` with `tmux_conf_*` variable
+assignments, the wizard can migrate them to the new TOML format:
+
+    sh ~/.tmux/setup-wizard.sh --migrate
+
+This reads your current variable assignments, writes a `tmux.toml`, and comments
+out the migrated lines in your `.local` file. A timestamped backup is created
+before any changes.
+
+**Rollback**
+
+To restore a previous configuration from a backup:
+
+    sh ~/.tmux/setup-wizard.sh --rollback
+
+This lists available backups (newest first) and lets you select one to restore.
+
+**Accessibility**
+
+The wizard adapts its interface for screen reader users when the accessible preset
+is active or when `tmux_conf_accessibility` is set to `true`. In this mode:
+
+- No colour preview output is shown (avoids ANSI escape noise)
+- All prompts use plain ASCII (no Unicode decorations)
+- Responses are terse and machine-readable
+
+**Precedence**
+
+Configuration precedence (highest to lowest):
+
+1. `#!important` lines in `.tmux.conf.local` (always win)
+2. Bare `tmux_conf_*` assignments in `.tmux.conf.local`
+3. Values from `tmux.toml`
+4. Built-in defaults
 
 ### Enabling the Powerline look
 

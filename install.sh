@@ -132,6 +132,25 @@ install() {
 
   printf '\n' >&2
   printf '🎉 Oh my tmux! successfully installed 🎉\n' >&2
+  printf '\n' >&2
+  printf 'Run the setup wizard to configure Oh my tmux!?\n' >&2
+  while :; do
+    printf '   [Y/n] > ' >&2
+    read -r answer < /dev/tty || answer="n"
+    case "$(printf '%s\n' "$answer" | tr '[:upper:]' '[:lower:]')" in
+      y|yes|"")
+        if [ -f "$OH_MY_TMUX_CLONE_PATH/setup-wizard.sh" ]; then
+          TMUX_CONF="$TMUX_CONF" TMUX_CONF_LOCAL="$TMUX_CONF_LOCAL" \
+            sh "$OH_MY_TMUX_CLONE_PATH/setup-wizard.sh"
+        fi
+        break
+        ;;
+      n|no)
+        printf '   Run later: sh %s/setup-wizard.sh\n' "$OH_MY_TMUX_CLONE_PATH" >&2
+        break
+        ;;
+    esac
+  done
 }
 
 if [ -p /dev/stdin ]; then
