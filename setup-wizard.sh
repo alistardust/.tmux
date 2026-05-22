@@ -672,6 +672,34 @@ $_end"
   fi
 }
 
+_recover_interrupted_txn() {
+  _txn_dir="$(_path_dir "$_toml_path")"
+  for _marker in "$_txn_dir"/.wizard-txn.*; do
+    [ -f "$_marker" ] || continue
+    printf 'Warning: found interrupted wizard transaction.\n' >&2
+    # Read backup paths from marker
+    _txn_toml_bak=""
+    _txn_local_bak=""
+    while IFS='=' read -r _k _v; do
+      case "$_k" in
+        toml_backup) _txn_toml_bak="$_v" ;;
+        local_backup) _txn_local_bak="$_v" ;;
+      esac
+    done < "$_marker"
+    # Restore from backups if they exist
+    if [ -n "$_txn_toml_bak" ] && [ -f "$_txn_toml_bak" ]; then
+      mv "$_txn_toml_bak" "$_toml_path"
+      printf 'Restored tmux.toml from backup.\n' >&2
+    fi
+    if [ -n "$_txn_local_bak" ] && [ -f "$_txn_local_bak" ]; then
+      mv "$_txn_local_bak" "$TMUX_CONF_LOCAL"
+      printf 'Restored .tmux.conf.local from backup.\n' >&2
+    fi
+    rm -f "$_marker"
+    printf 'Recovery complete.\n' >&2
+  done
+}
+
 _transactional_write() {
   _toml_dir="$(_path_dir "$_toml_path")"
   _local_dir="$(_path_dir "$TMUX_CONF_LOCAL")"
@@ -683,6 +711,10 @@ _transactional_write() {
     printf 'Error: cannot create temp file\n' >&2
     return 1
   }
+
+  # Cleanup trap: remove temp files on interrupt
+  trap 'rm -f "$_tmp_toml" "$_tmp_local" "$_txn_marker" 2>/dev/null' EXIT INT TERM
+
   _build_toml > "$_tmp_toml"
 
   # Stage local to temp
@@ -698,21 +730,32 @@ _transactional_write() {
   [ -f "$_toml_path" ] && cp "$_toml_path" "${_toml_path}.bak.${_ts}"
   [ -f "$TMUX_CONF_LOCAL" ] && cp "$TMUX_CONF_LOCAL" "${TMUX_CONF_LOCAL}.pre-toml.${_ts}"
 
+  # Transaction marker: records intent so partial writes can be recovered
+  _txn_marker="${_toml_dir}/.wizard-txn.$$"
+  printf 'toml_backup=%s\nlocal_backup=%s\n' \
+    "${_toml_path}.bak.${_ts}" "${TMUX_CONF_LOCAL}.pre-toml.${_ts}" > "$_txn_marker"
+
   # Atomic rename: TOML first
   if ! mv "$_tmp_toml" "$_toml_path"; then
-    rm -f "$_tmp_toml" "$_tmp_local"
+    rm -f "$_tmp_toml" "$_tmp_local" "$_txn_marker"
     printf 'Error: failed to write tmux.toml\n' >&2
     return 1
   fi
 
   # Atomic rename: local second
   if ! mv "$_tmp_local" "$TMUX_CONF_LOCAL"; then
-    # Rollback TOML from backup
-    [ -f "${_toml_path}.bak.${_ts}" ] && mv "${_toml_path}.bak.${_ts}" "$_toml_path"
-    rm -f "$_tmp_local"
-    printf 'Error: failed to write .tmux.conf.local\n' >&2
+    # Rollback TOML from backup (transaction incomplete)
+    if [ -f "${_toml_path}.bak.${_ts}" ]; then
+      mv "${_toml_path}.bak.${_ts}" "$_toml_path"
+    fi
+    rm -f "$_tmp_local" "$_txn_marker"
+    printf 'Error: failed to write .tmux.conf.local (rolled back tmux.toml)\n' >&2
     return 1
   fi
+
+  # Transaction complete: remove marker
+  rm -f "$_txn_marker"
+  trap - EXIT INT TERM
 
   if [ "$SR_MODE" = 1 ]; then
     printf 'Configuration written successfully.\n'
@@ -1232,6 +1275,9 @@ trap '_die "Setup cancelled. No changes written."' INT TERM
 # --- Main ---
 main() {
   _detect_paths
+
+  # Recover from interrupted transactions
+  _recover_interrupted_txn
 
   # CLI dispatch
   case "${1:-}" in
