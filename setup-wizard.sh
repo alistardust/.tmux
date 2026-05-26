@@ -437,9 +437,10 @@ _ask_quick() {
     _WENT_BACK=0
     case "$_step" in
       1)
+        _BACKTRACK_ENABLED=0
         _progress 1 8
         _choose "Prefix key" "C-b (default)" "C-a (screen-like)"
-        [ "$_WENT_BACK" = 1 ] && { _step=1; continue; }
+        _BACKTRACK_ENABLED=1
         case $_answer in
           1) cfg_prefix_key="C-b" ;;
           2) cfg_prefix_key="C-a" ;;
