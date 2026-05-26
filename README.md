@@ -36,12 +36,12 @@ You can install Oh my tmux! at any of the following locations:
 **Automatic installation**
 
 Copy the following command and paste it in your terminal.
-```
+```sh
 curl -fsSL "https://github.com/gpakosz/.tmux/raw/refs/heads/master/install.sh#$(date +%s)" | bash
 ```
 
 **Manual installation in `~`**
-```
+```sh
 $ cd
 $ git clone --single-branch https://github.com/gpakosz/.tmux.git
 $ ln -s -f .tmux/.tmux.conf
@@ -49,7 +49,7 @@ $ cp .tmux/.tmux.conf.local .
 ```
 
 **Manual installation in `$XDG_CONFIG_HOME/tmux`**
-```
+```sh
 $ git clone --single-branch https://github.com/gpakosz/.tmux.git "/path/to/oh-my-tmux"
 $ mkdir -p "$XDG_CONFIG_HOME/tmux"
 $ ln -s /path/to/oh-my-tmux/.tmux.conf "$XDG_CONFIG_HOME/tmux/tmux.conf"
@@ -57,7 +57,7 @@ $ cp /path/to/oh-my-tmux/.tmux.conf.local "$XDG_CONFIG_HOME/tmux/tmux.conf.local
 ```
 
 **Manual installation `~/.config/tmux`**
-```
+```sh
 $ git clone --single-branch https://github.com/gpakosz/.tmux.git "/path/to/oh-my-tmux"
 $ mkdir -p ~/.config/tmux
 $ ln -s /path/to/oh-my-tmux/.tmux.conf ~/.config/tmux/tmux.conf
@@ -93,7 +93,7 @@ Troubleshooting
     Please, try make sure no tmux client or server process is currently running.
 
     Then launch tmux with:
-    ```
+    ```sh
     $ tmux -f /dev/null -L test
     ```
 
@@ -111,11 +111,11 @@ Troubleshooting
 
     When that happens append `#!important` to the line:
 
-    ```
+    ```sh
     bind c new-window -c '#{pane_current_path}' #!important
     ```
 
-    ```
+    ```sh
     set -g default-terminal "screen-256color" #!important
     ```
 
@@ -381,7 +381,7 @@ To make use of these symbols, there are several options:
 Then edit your `.local` customization file copy (with `<prefix> e`) and adjust
 the following variables:
 
-```
+```sh
 tmux_conf_theme_left_separator_main='\uE0B0'
 tmux_conf_theme_left_separator_sub='\uE0B1'
 tmux_conf_theme_right_separator_main='\uE0B2'
@@ -430,7 +430,7 @@ Beside the variables mentioned above, the `tmux_conf_theme_status_left` and
 `tmux_conf_theme_status_right` variables support the usual tmux syntax, e.g.
 using `#()` to call an external command that inserts weather information
 provided by [wttr.in]:
-```
+```sh
 tmux_conf_theme_status_right='#{prefix}#{pairing}#{synchronized} #(curl -m 1 wttr.in?format=3 2>/dev/null; sleep 900) , %R , %d %b | #{username}#{root} | #{hostname} '
 ```
 The `sleep 900` call makes sure the network request is issued at most every 15
@@ -453,7 +453,7 @@ Finally, remember that `tmux_conf_theme_status_left` and
 `tmux_conf_theme_status_right` end up being given to tmux as `status-left` and
 `status-right` which means they're passed through `strftime()`. As such, the `%`
 character has a special meaning and needs to be escaped by doubling it, e.g.
-```
+```sh
 tmux_conf_theme_status_right='#(echo foo %% bar)'
 ```
 See also `man 3 strftime`.
@@ -509,7 +509,7 @@ Oh my tmux! includes an opt-in accessibility mode for screen reader users, low
 vision users, and colorblind users. Enable it by setting one variable in your
 `.tmux.conf.local`:
 
-```
+```sh
 tmux_conf_accessibility=enabled
 ```
 
