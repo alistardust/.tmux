@@ -263,6 +263,7 @@ _choose() {
   shift
   _num_choices=$#
   _n=1
+  _WENT_BACK=0
 
   if [ "$SR_MODE" = 1 ]; then
     printf 'Question: %s\n' "$_label"
@@ -270,6 +271,9 @@ _choose() {
       printf '  Option %d: %s\n' "$_n" "$_opt"
       _n=$((_n + 1))
     done
+    if [ "${_BACKTRACK_ENABLED:-0}" = 1 ]; then
+      printf '  Option 0: Go back to previous question\n'
+    fi
     printf 'Enter a number (1 to %d): ' "$_num_choices"
   else
     printf '%s\n' "$_label"
@@ -277,19 +281,37 @@ _choose() {
       printf '  %d) %s\n' "$_n" "$_opt"
       _n=$((_n + 1))
     done
+    if [ "${_BACKTRACK_ENABLED:-0}" = 1 ]; then
+      printf '  0) Go back\n'
+    fi
     printf '> '
   fi
 
-  if ! read -r _answer; then
-    _die "Input closed. No changes written."
-  fi
-  # Validate
-  case "$_answer" in
-    *[!0-9]*) _answer=1 ;;
-  esac
-  [ -z "$_answer" ] && _answer=1
-  [ "$_answer" -lt 1 ] 2>/dev/null && _answer=1
-  [ "$_answer" -gt "$_num_choices" ] 2>/dev/null && _answer="$_num_choices"
+  while :; do
+    if ! read -r _answer; then
+      _die "Input closed. No changes written."
+    fi
+    # Handle "go back"
+    if [ "${_BACKTRACK_ENABLED:-0}" = 1 ] && [ "$_answer" = "0" ]; then
+      _WENT_BACK=1
+      _answer=0
+      return 0
+    fi
+    # Validate: must be a number in range
+    case "$_answer" in
+      "") ;;
+      *[!0-9]*) _answer="" ;;
+    esac
+    if [ -z "$_answer" ] || [ "$_answer" -lt 1 ] 2>/dev/null || [ "$_answer" -gt "$_num_choices" ] 2>/dev/null; then
+      if [ "$SR_MODE" = 1 ]; then
+        printf 'Invalid input. Enter a number between 1 and %d: ' "$_num_choices"
+      else
+        printf 'Invalid choice. Enter 1-%d: ' "$_num_choices"
+      fi
+      continue
+    fi
+    break
+  done
 
   if [ "$SR_MODE" = 1 ]; then
     # Read-back the selection
@@ -306,16 +328,32 @@ _choose() {
 
 _confirm() {
   _msg="$1"
+  _default="${2:-y}"
   if [ "$SR_MODE" = 1 ]; then
-    printf 'Question: %s (y or n, default y): ' "$_msg"
+    if [ "$_default" = "n" ]; then
+      printf 'Question: %s (type y or n, default is no): ' "$_msg"
+    else
+      printf 'Question: %s (type y or n, default is yes): ' "$_msg"
+    fi
   else
-    printf '%s [Y/n] ' "$_msg"
+    if [ "$_default" = "n" ]; then
+      printf '%s (y/N, default: no): ' "$_msg"
+    else
+      printf '%s (Y/n, default: yes): ' "$_msg"
+    fi
   fi
   if ! read -r _yn; then
     _die "Input closed. No changes written."
   fi
   case "$_yn" in
+    [Yy]*) return 0 ;;
     [Nn]*) return 1 ;;
+    "")
+      if [ "$_default" = "n" ]; then
+        return 1
+      fi
+      return 0
+      ;;
     *) return 0 ;;
   esac
 }
@@ -392,111 +430,144 @@ _preset_accessible() {
 
 # --- Question Flows ---
 _ask_quick() {
-  _progress 1 8
-  _choose "Prefix key" "C-b (default)" "C-a (screen-like)"
-  case $_answer in
-    1) cfg_prefix_key="C-b" ;;
-    2) cfg_prefix_key="C-a" ;;
-  esac
+  _BACKTRACK_ENABLED=1
+  _step=1
 
-  if [ "$SR_MODE" = 1 ]; then
-    _announce "Note: Mouse ON lets you click panes and scroll with the mouse wheel, but it intercepts your terminal native text selection. Mouse OFF means you use keyboard commands for everything."
-  fi
-  _progress 2 8
-  _choose "Mouse support" "On (click and scroll)" "Off (keyboard only)"
-  case $_answer in
-    1) cfg_mouse=true ;;
-    2) cfg_mouse=false ;;
-  esac
+  while [ "$_step" -le 8 ]; do
+    _WENT_BACK=0
+    case "$_step" in
+      1)
+        _progress 1 8
+        _choose "Prefix key" "C-b (default)" "C-a (screen-like)"
+        [ "$_WENT_BACK" = 1 ] && { _step=1; continue; }
+        case $_answer in
+          1) cfg_prefix_key="C-b" ;;
+          2) cfg_prefix_key="C-a" ;;
+        esac
+        ;;
+      2)
+        if [ "$SR_MODE" = 1 ]; then
+          _announce "Note: Mouse ON lets you click panes and scroll with the mouse wheel, but it intercepts your terminal native text selection. Mouse OFF means you use keyboard commands for everything."
+        fi
+        _progress 2 8
+        _choose "Mouse support" "On (click and scroll)" "Off (keyboard only)"
+        [ "$_WENT_BACK" = 1 ] && { _step=$((_step - 1)); continue; }
+        case $_answer in
+          1) cfg_mouse=true ;;
+          2) cfg_mouse=false ;;
+        esac
+        ;;
+      3)
+        _progress 3 8
+        _choose "Theme" "Dark (default)" "Light" "High contrast (accessible)"
+        [ "$_WENT_BACK" = 1 ] && { _step=$((_step - 1)); continue; }
+        case $_answer in
+          1) ;;
+          2)
+            cfg_colour_1="#f5f5f0"
+            cfg_colour_2="#e0e0da"
+            cfg_colour_3="#555555"
+            cfg_colour_4="#007a5e"
+            cfg_colour_5="#b8860b"
+            cfg_colour_6="#f5f5f0"
+            cfg_colour_7="#1a1a1a"
+            cfg_colour_8="#f5f5f0"
+            cfg_colour_9="#b8860b"
+            cfg_colour_10="#cc3300"
+            cfg_colour_11="#007a5e"
+            cfg_colour_12="#777777"
+            cfg_colour_13="#1a1a1a"
+            cfg_colour_14="#f5f5f0"
+            cfg_colour_15="#f5f5f0"
+            cfg_colour_16="#cc3300"
+            cfg_colour_17="#1a1a1a"
+            ;;
+          3)
+            cfg_colour_1="#1a1a2e"
+            cfg_colour_2="#2d2d44"
+            cfg_colour_3="#b0b0b0"
+            cfg_colour_4="#00d4aa"
+            cfg_colour_5="#ffd700"
+            cfg_colour_6="#1a1a2e"
+            cfg_colour_7="#e0e0e0"
+            cfg_colour_8="#1a1a2e"
+            cfg_colour_9="#ffd700"
+            cfg_colour_10="#ff8c00"
+            cfg_colour_11="#00d4aa"
+            cfg_colour_12="#6c6c6c"
+            cfg_colour_13="#e0e0e0"
+            cfg_colour_14="#1a1a2e"
+            cfg_colour_15="#1a1a2e"
+            cfg_colour_16="#ff8c00"
+            cfg_colour_17="#e0e0e0"
+            ;;
+        esac
 
-  _progress 3 8
-  _choose "Theme" "Dark (default)" "Light" "High contrast (accessible)"
-  case $_answer in
-    1) ;;
-    2)
-      cfg_colour_1="#f5f5f0"
-      cfg_colour_2="#e0e0da"
-      cfg_colour_3="#555555"
-      cfg_colour_4="#007a5e"
-      cfg_colour_5="#b8860b"
-      cfg_colour_6="#f5f5f0"
-      cfg_colour_7="#1a1a1a"
-      cfg_colour_8="#f5f5f0"
-      cfg_colour_9="#b8860b"
-      cfg_colour_10="#cc3300"
-      cfg_colour_11="#007a5e"
-      cfg_colour_12="#777777"
-      cfg_colour_13="#1a1a1a"
-      cfg_colour_14="#f5f5f0"
-      cfg_colour_15="#f5f5f0"
-      cfg_colour_16="#cc3300"
-      cfg_colour_17="#1a1a1a"
-      ;;
-    3)
-      cfg_colour_1="#1a1a2e"
-      cfg_colour_2="#2d2d44"
-      cfg_colour_3="#b0b0b0"
-      cfg_colour_4="#00d4aa"
-      cfg_colour_5="#ffd700"
-      cfg_colour_6="#1a1a2e"
-      cfg_colour_7="#e0e0e0"
-      cfg_colour_8="#1a1a2e"
-      cfg_colour_9="#ffd700"
-      cfg_colour_10="#ff8c00"
-      cfg_colour_11="#00d4aa"
-      cfg_colour_12="#6c6c6c"
-      cfg_colour_13="#e0e0e0"
-      cfg_colour_14="#1a1a2e"
-      cfg_colour_15="#1a1a2e"
-      cfg_colour_16="#ff8c00"
-      cfg_colour_17="#e0e0e0"
-      ;;
-  esac
-
-  if [ "$SR_MODE" != 1 ] && [ "$(_detect_colour_support)" != "basic" ]; then
-    printf '\n  Preview of selected theme:\n'
-    _preview_colour "${cfg_colour_1}" "Background:"
-    _preview_colour "${cfg_colour_4}" "Accent:    "
-    _preview_colour "${cfg_colour_7}" "Foreground:"
-    _preview_colour "${cfg_colour_5}" "Highlight: "
-    printf '  (Actual tmux appearance may vary)\n\n'
-  fi
-
-  _progress 4 8
-  _choose "Clipboard integration" "On (copy to OS clipboard)" "Off"
-  case $_answer in
-    1) cfg_copy_to_os_clipboard=true ;;
-    2) cfg_copy_to_os_clipboard=false ;;
-  esac
-
-  _progress 5 8
-  _choose "Accessibility mode" "Enabled" "Disabled (default)"
-  case $_answer in
-    1) cfg_accessibility=enabled; cfg_accessibility_keys=enabled ;;
-    2) cfg_accessibility=disabled ;;
-  esac
-
-  _progress 6 8
-  _choose "24-bit colour" "Auto-detect (recommended)" "Force on" "Force off"
-  case $_answer in
-    1) cfg_24b_colour=auto ;;
-    2) cfg_24b_colour=true ;;
-    3) cfg_24b_colour=false ;;
-  esac
-
-  _progress 7 8
-  _choose "New panes keep current path" "Yes (default)" "No"
-  case $_answer in
-    1) cfg_new_pane_retain_current_path=true ;;
-    2) cfg_new_pane_retain_current_path=false ;;
-  esac
-
-  _progress 8 8
-  _choose "Auto-update plugins on launch" "Yes (default)" "No"
-  case $_answer in
-    1) cfg_update_plugins_on_launch=true ;;
-    2) cfg_update_plugins_on_launch=false ;;
-  esac
+        if [ "$SR_MODE" = 1 ]; then
+          case $_answer in
+            1) _announce "Theme: Dark (navy background, teal accent, gold highlight)" ;;
+            2) _announce "Theme: Light (cream background, green accent, gold highlight)" ;;
+            3) _announce "Theme: High contrast (dark background, bright teal accent, gold highlight)" ;;
+          esac
+        elif [ "$(_detect_colour_support)" != "basic" ]; then
+          printf '\n  Preview of selected theme:\n'
+          _preview_colour "${cfg_colour_1}" "Background:"
+          _preview_colour "${cfg_colour_4}" "Accent:    "
+          _preview_colour "${cfg_colour_7}" "Foreground:"
+          _preview_colour "${cfg_colour_5}" "Highlight: "
+          printf '  (Actual tmux appearance may vary)\n\n'
+        fi
+        ;;
+      4)
+        _progress 4 8
+        _choose "Clipboard integration" "On (copy to OS clipboard)" "Off"
+        [ "$_WENT_BACK" = 1 ] && { _step=$((_step - 1)); continue; }
+        case $_answer in
+          1) cfg_copy_to_os_clipboard=true ;;
+          2) cfg_copy_to_os_clipboard=false ;;
+        esac
+        ;;
+      5)
+        _progress 5 8
+        _choose "Accessibility mode" "Enabled" "Disabled (default)"
+        [ "$_WENT_BACK" = 1 ] && { _step=$((_step - 1)); continue; }
+        case $_answer in
+          1) cfg_accessibility=enabled; cfg_accessibility_keys=enabled ;;
+          2) cfg_accessibility=disabled ;;
+        esac
+        ;;
+      6)
+        _progress 6 8
+        _choose "24-bit colour" "Auto-detect (recommended)" "Force on" "Force off"
+        [ "$_WENT_BACK" = 1 ] && { _step=$((_step - 1)); continue; }
+        case $_answer in
+          1) cfg_24b_colour=auto ;;
+          2) cfg_24b_colour=true ;;
+          3) cfg_24b_colour=false ;;
+        esac
+        ;;
+      7)
+        _progress 7 8
+        _choose "New panes keep current path" "Yes (default)" "No"
+        [ "$_WENT_BACK" = 1 ] && { _step=$((_step - 1)); continue; }
+        case $_answer in
+          1) cfg_new_pane_retain_current_path=true ;;
+          2) cfg_new_pane_retain_current_path=false ;;
+        esac
+        ;;
+      8)
+        _progress 8 8
+        _choose "Auto-update plugins on launch" "Yes (default)" "No"
+        [ "$_WENT_BACK" = 1 ] && { _step=$((_step - 1)); continue; }
+        case $_answer in
+          1) cfg_update_plugins_on_launch=true ;;
+          2) cfg_update_plugins_on_launch=false ;;
+        esac
+        ;;
+    esac
+    _step=$((_step + 1))
+  done
+  _BACKTRACK_ENABLED=0
 }
 
 # --- Output Builders ---
@@ -1175,8 +1246,8 @@ _rollback() {
 
   _max_display=15
   [ "$_show_all" = 1 ] && _max_display=9999
-  printf 'Available restore points:\n'
 
+  # Build labels and index map (newest first)
   _displayed=0
   _i="$_total"
   while [ "$_i" -gt 0 ] && [ "$_displayed" -lt "$_max_display" ]; do
@@ -1191,38 +1262,32 @@ _rollback() {
       *.pre-toml.[0-9]*) _ts="${_name##*.pre-toml.}" ;;
     esac
     [ -z "$_ts" ] && _ts="(unknown date)"
-    printf '  %d) [%s] %s\n' "$_displayed" "$_type" "$_ts"
+    eval "_rb_label_$_displayed=\"[${_type}] ${_ts}\""
+    eval "_rb_map_$_displayed=$_i"
     _i=$((_i - 1))
   done
   [ "$_total" -gt "$_max_display" ] && printf '  ... and %d older backups (use --rollback --all to see)\n' "$((_total - _max_display))"
 
-  printf '  0) Cancel\n'
-  printf 'Selection: '
-  read -r _answer || {
+  # Build _choose call dynamically
+  eval 'set --'
+  _j=1
+  while [ "$_j" -le "$_displayed" ]; do
+    eval "_lbl=\"\$_rb_label_$_j\""
+    set -- "$@" "$_lbl"
+    _j=$((_j + 1))
+  done
+
+  _choose "Select restore point" "$@" "Cancel"
+  _selection=$_answer
+
+  # Handle cancel (last option)
+  if [ "$_selection" -gt "$_displayed" ]; then
     printf 'Cancelled.\n'
     return 0
-  }
-
-  case "$_answer" in
-    *[!0-9]*) printf 'Invalid selection.\n' >&2; return 1 ;;
-  esac
-  [ -z "$_answer" ] && {
-    printf 'Invalid selection.\n' >&2
-    return 1
-  }
-  [ "$_answer" -eq 0 ] 2>/dev/null && {
-    printf 'Cancelled.\n'
-    return 0
-  }
-
-  if [ "$_answer" -lt 1 ] || [ "$_answer" -gt "$_displayed" ]; then
-    printf 'Invalid selection.\n' >&2
-    return 1
   fi
 
-  _real_idx=$((_total - _answer + 1))
+  eval "_real_idx=\"\$_rb_map_$_selection\""
   eval "_chosen_entry=\"\$_bk_$_real_idx\""
-
   _chosen_type="${_chosen_entry%%:*}"
   _chosen_path="${_chosen_entry#*:}"
 
@@ -1245,11 +1310,10 @@ _rollback() {
     return 1
   fi
 
-  printf 'Restore %s -> %s? [Y/n] ' "$(basename "$_chosen_path")" "$_restore_target"
-  read -r _yn || _yn="n"
-  case "$_yn" in
-    [Nn]*) printf 'Cancelled.\n'; return 0 ;;
-  esac
+  if ! _confirm "Restore $(basename "$_chosen_path") -> ${_restore_target}" "n"; then
+    printf 'Cancelled.\n'
+    return 0
+  fi
 
   _tmp="$(_make_temp_file "$_restore_target")" || {
     printf 'Error: cannot create temp file\n' >&2
@@ -1295,11 +1359,16 @@ main() {
   _load_defaults
   _load_existing
 
-  # Screen reader detection
-  if _confirm "Are you using a screen reader?"; then
+  # Screen reader detection: check stored preference first
+  SR_MODE=0
+  if [ "${cfg_accessibility:-}" = "enabled" ] || [ "${tmux_conf_accessibility:-}" = "enabled" ]; then
     SR_MODE=1
+    printf 'Screen reader mode active from your configuration.\n'
+    printf 'To disable, run with --no-sr or change accessibility to disabled.\n'
   else
-    SR_MODE=0
+    if _confirm "Do you use assistive technology to read your screen (for example, a program that reads text aloud)"; then
+      SR_MODE=1
+    fi
   fi
 
   # Mode selection
@@ -1315,6 +1384,8 @@ main() {
       esac
       ;;
     3)
+      printf 'Preset + customize: a preset is applied first, then you can\n'
+      printf 'override individual settings in the 8-question flow.\n\n'
       _choose "Start from" "Minimal" "Power user" "Accessible"
       case $_answer in
         1) _preset_minimal ;;

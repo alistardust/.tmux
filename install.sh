@@ -131,11 +131,11 @@ install() {
   fi
 
   printf '\n' >&2
-  printf '🎉 Oh my tmux! successfully installed 🎉\n' >&2
+  printf 'Oh my tmux! successfully installed.\n' >&2
   printf '\n' >&2
   printf 'Run the setup wizard to configure Oh my tmux!?\n' >&2
   while :; do
-    printf '   [Y/n] > ' >&2
+    printf '   Type y to run the wizard, or n to skip (default: yes): ' >&2
     read -r answer < /dev/tty || answer="n"
     case "$(printf '%s\n' "$answer" | tr '[:upper:]' '[:lower:]')" in
       y|yes|"")

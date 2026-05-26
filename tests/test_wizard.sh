@@ -138,7 +138,8 @@ tmpdir="$(make_test_dir)"
 printf '# test\n' > "$tmpdir/tmux.conf.local"
 printf '[accessibility]\nenabled = "enabled"\n' > "$tmpdir/tmux.toml"
 cp "$ROOT_DIR/.tmux.conf" "$tmpdir/tmux.conf"
-printf 'y\n2\n3\ny\n' | \
+# SR_MODE auto-detected from accessibility=enabled, so skip SR question
+printf '2\n3\ny\n' | \
   TMUX_CONF="$tmpdir/tmux.conf" TMUX_CONF_LOCAL="$tmpdir/tmux.conf.local" \
   WIZARD_TOML_PATH="$tmpdir/tmux.toml" WIZARD_NON_INTERACTIVE=1 \
   sh "$WIZARD" >/dev/null 2>&1 || true
@@ -178,12 +179,13 @@ output="$(printf '1\ny\n' | \
 assert_match 'empty' "$output" "empty backup rejected"
 rm -rf "$tmpdir"
 
-# --- Test: cancel (choice 0) leaves files unchanged ---
+# --- Test: cancel leaves files unchanged ---
+# With one backup: option 1 = backup, option 2 = Cancel
 tmpdir="$(make_test_dir)"
 printf '[general]\ncurrent = true\n' > "$tmpdir/tmux.toml"
 printf '[general]\nold = true\n' > "$tmpdir/tmux.toml.bak.20260101-120000"
 printf '# test\n' > "$tmpdir/tmux.conf.local"
-printf '0\n' | \
+printf '2\n' | \
   TMUX_CONF="$tmpdir/tmux.conf" TMUX_CONF_LOCAL="$tmpdir/tmux.conf.local" \
   WIZARD_TOML_PATH="$tmpdir/tmux.toml" \
   sh "$WIZARD" --rollback >/dev/null 2>&1
