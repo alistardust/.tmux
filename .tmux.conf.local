@@ -147,6 +147,21 @@ tmux_conf_theme_pane_active_border="$tmux_conf_theme_colour_4"
 tmux_conf_theme_pane_active_border="#{?pane_in_mode,$tmux_conf_theme_colour_9,#{?synchronize-panes,$tmux_conf_theme_colour_16,$tmux_conf_theme_colour_4}}"
 %endif
 
+# pane border title (shows a label above/below each pane)
+#   - disabled (default): no pane border titles
+#   - top: titles above panes
+#   - bottom: titles below panes
+tmux_conf_theme_pane_border_title="disabled"
+
+# pane border title format
+#   uses tmux format strings (see tmux man page)
+#   built-in variables are:
+#     - #{pane_title}
+#     - #{pane_current_command}
+#     - #{pane_current_path}
+#   defaults to " #{pane_title} " when pane_border_title is enabled
+#tmux_conf_theme_pane_border_title_format=" #{pane_title} "
+
 # pane indicator colours (when you hit <prefix> + q)
 tmux_conf_theme_pane_indicator="$tmux_conf_theme_colour_4"
 tmux_conf_theme_pane_active_indicator="$tmux_conf_theme_colour_4"
